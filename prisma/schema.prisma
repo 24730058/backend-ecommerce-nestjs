@@ -43,7 +43,7 @@ model User {
   firstName String?
   lastName  String?
   role      Role     @default(USER)
-  refreshTokens String?
+  refreshToken String?
   // relations
   orders   Order[]
   carts    Cart[]
