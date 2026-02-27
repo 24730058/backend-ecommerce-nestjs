@@ -23,84 +23,56 @@ import { UsersService } from './users.service';
 import { UserResponseDto } from './dto/user-response.dto';
 import type { RequestWithUser } from 'src/common/interfaces/request-with-user.interface';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { Role } from 'src/generated/prisma/browser';
+import { Role } from '@prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
 @ApiTags('users')
-@ApiBearerAuth('JWT-auth') // Use the same name as defined in the Swagger configuration for the JWT auth scheme
-@UseGuards(JwtAuthGuard, RoleGuard) // Apply both JWT authentication and role-based authorization guards
+@ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard, RoleGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  //   Get current user profile
   @Get('me')
-  @ApiOperation({
-    summary: 'Get current user',
-    description: 'Returns the details of the currently authenticated user.',
-  })
+  @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({
     status: 200,
-    description: 'User details retrieved successfully',
+    description: 'The current user profile',
     type: UserResponseDto,
   })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - Invalid or missing JWT token',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - Insufficient permissions to access this resource',
-  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getProfile(@Req() req: RequestWithUser): Promise<UserResponseDto> {
     return await this.usersService.findOne(req.user.id);
   }
 
-  // Get all users, only accessible by admin users
-  @Get('all')
-  @Roles(Role.ADMIN) // Only allow access to users with the ADMIN role
-  @ApiOperation({
-    summary: 'Get all users',
-  })
+  // Get all users (for admin purposes)
+  @Get()
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({
     status: 200,
-    description: 'List of all users retrieved successfully',
+    description: 'List of all users',
     type: [UserResponseDto],
   })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - Invalid or missing JWT token',
-  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async findAll(): Promise<UserResponseDto[]> {
     return await this.usersService.findAll();
   }
 
-  // get user by id, only accessible by admin users
+  // Get user by ID (for admin purposes)
   @Get(':id')
-  @Roles(Role.ADMIN) // Only allow access to users with the ADMIN role
-  @ApiOperation({
-    summary: 'Get user by ID',
-    description:
-      'Returns the details of a user by their ID. Only accessible by admin users.',
-  })
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Get user by ID' })
   @ApiResponse({
     status: 200,
-    description: 'User details retrieved successfully',
+    description: 'The user with the specified ID',
     type: UserResponseDto,
   })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - Invalid or missing JWT token',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - Insufficient permissions to access this resource',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'User not found',
-  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'User not found' })
   async findOne(@Param('id') id: string): Promise<UserResponseDto> {
     return await this.usersService.findOne(id);
   }
