@@ -13,7 +13,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoryService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prismaService: PrismaService) {}
 
   // Create a new category
   async create(
@@ -28,7 +28,7 @@ export class CategoryService {
         .replace(/\s+/g, '-')
         .replace(/[^\w-]/g, '');
 
-    const existingCategory = await this.prisma.category.findUnique({
+    const existingCategory = await this.prismaService.category.findUnique({
       where: { slug: categorySlug },
     });
 
@@ -38,7 +38,7 @@ export class CategoryService {
       );
     }
 
-    const category = await this.prisma.category.create({
+    const category = await this.prismaService.category.create({
       data: {
         name,
         slug: categorySlug,
@@ -73,9 +73,9 @@ export class CategoryService {
       ];
     }
 
-    const total = await this.prisma.category.count({ where });
+    const total = await this.prismaService.category.count({ where });
 
-    const categories = await this.prisma.category.findMany({
+    const categories = await this.prismaService.category.findMany({
       where,
       skip: (page - 1) * limit,
       take: limit,
@@ -102,7 +102,7 @@ export class CategoryService {
 
   // Get category by ID
   async findOne(id: string): Promise<CategoryResponseDto> {
-    const category = await this.prisma.category.findUnique({
+    const category = await this.prismaService.category.findUnique({
       where: { id },
       include: {
         _count: {
@@ -120,7 +120,7 @@ export class CategoryService {
 
   // Get category by slug
   async findBySlug(slug: string): Promise<CategoryResponseDto> {
-    const category = await this.prisma.category.findUnique({
+    const category = await this.prismaService.category.findUnique({
       where: { slug },
       include: {
         _count: {
@@ -141,7 +141,7 @@ export class CategoryService {
     id: string,
     updateCategoryDto: UpdateCategoryDto,
   ): Promise<CategoryResponseDto> {
-    const existingCategory = await this.prisma.category.findUnique({
+    const existingCategory = await this.prismaService.category.findUnique({
       where: { id },
     });
 
@@ -153,7 +153,7 @@ export class CategoryService {
       updateCategoryDto.slug &&
       updateCategoryDto.slug !== existingCategory.slug
     ) {
-      const slugTaken = await this.prisma.category.findUnique({
+      const slugTaken = await this.prismaService.category.findUnique({
         where: { slug: updateCategoryDto.slug },
       });
 
@@ -164,7 +164,7 @@ export class CategoryService {
       }
     }
 
-    const updatedCategory = await this.prisma.category.update({
+    const updatedCategory = await this.prismaService.category.update({
       where: { id },
       data: updateCategoryDto,
       include: {
@@ -182,7 +182,7 @@ export class CategoryService {
 
   // Remove a catgory
   async remove(id: string): Promise<{ message: string }> {
-    const category = await this.prisma.category.findUnique({
+    const category = await this.prismaService.category.findUnique({
       where: { id },
       include: {
         _count: {
@@ -203,11 +203,11 @@ export class CategoryService {
       );
     }
 
-    await this.prisma.category.delete({
+    await this.prismaService.category.delete({
       where: { id },
     });
 
-    return { message: `Category delete successfully` };
+    return { message: `Category deleted successfully` };
   }
 
   private formatCategory(
