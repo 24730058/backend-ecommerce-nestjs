@@ -7,6 +7,8 @@ import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './modules/users/users.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ProductsModule } from './modules/products/products.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -14,13 +16,20 @@ import { ProductsModule } from './modules/products/products.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // seconds
+        limit: 10, // max 10 requests per ttl
+      },
+    ]),
     PrismaModule,
     AuthModule,
     UsersModule,
     CategoryModule,
     ProductsModule,
+    OrdersModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ThrottlerGuard],
 })
 export class AppModule {}
