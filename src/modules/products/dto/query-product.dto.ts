@@ -41,7 +41,7 @@ export class QueryProductDto {
 
   @ApiPropertyOptional({
     description: 'Minimum price filter',
-    example: 100,
+    example: 150000,
   })
   @Type(() => Number)
   @IsNumber()
@@ -51,7 +51,7 @@ export class QueryProductDto {
 
   @ApiPropertyOptional({
     description: 'Maximum price filter',
-    example: 1000,
+    example: 1000000,
   })
   @Type(() => Number)
   @IsNumber()

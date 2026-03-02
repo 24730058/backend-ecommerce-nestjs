@@ -34,8 +34,8 @@ export class OrderItemResponseDto {
   quantity: number;
 
   @ApiProperty({
-    example: 999.99,
-    description: 'Price locked at time of order',
+    example: 150000,
+    description: 'Price locked at time of order in VND',
   })
   price: number;
 
@@ -69,7 +69,7 @@ export class OrderResponseDto {
   @ApiProperty({ enum: OrderStatus, example: OrderStatus.PENDING })
   status: OrderStatus;
 
-  @ApiProperty({ example: 1999.98 })
+  @ApiProperty({ example: 150000, description: 'Total amount in VND' })
   totalAmount: number;
 
   @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })

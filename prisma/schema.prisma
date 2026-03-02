@@ -5,9 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider     = "prisma-client"
-  output       = "../src/generated/prisma"
-  moduleFormat = "cjs"
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -36,40 +35,48 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum PaymentProvider {
+  COD           
+  BANK_TRANSFER 
+  MOMO         
+  ZALOPAY       
+  VNPAY         
+  STRIPE       // Thanh toán quốc tế
+}
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  firstName String?
-  lastName  String?
-  role      Role     @default(USER)
-  refreshToken String?
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  firstName     String?
+  lastName      String?
+  role          Role      @default(USER)
+  refreshTokens String?
   // relations
-  orders   Order[]
-  carts    Cart[]
-  payments Payment[]
+  orders        Order[]
+  carts         Cart[]
+  payments      Payment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([email])
   @@map("users") // the name of the table 
 }
 
 model Product {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   name        String
   description String?
-  price       Decimal  @db.Decimal(10, 2)
-  stock       Int      @default(0)
-  sku         String   @unique
+  price       Decimal @db.Decimal(12, 0)
+  stock       Int     @default(0)
+  sku         String  @unique
   imageUrl    String?
-  isActive    Boolean  @default(true)
+  isActive    Boolean @default(true)
 
   // relations
   orderItems OrderItem[]
   cartItems  CartItem[]
-  
+
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
 
@@ -83,12 +90,12 @@ model Product {
 }
 
 model Category {
-  id       String    @id @default(uuid())
-  name     String
+  id          String  @id @default(uuid())
+  name        String
   description String?
-  slug     String    @unique
-  imageUrl String?
-  isActive Boolean   @default(true)
+  slug        String  @unique
+  imageUrl    String?
+  isActive    Boolean @default(true)
 
   products Product[]
 
@@ -98,18 +105,17 @@ model Category {
   @@index([slug])
   @@index([isActive])
   @@map("categories") // the name of the table
-
 }
 
 model OrderItem {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   quantity  Int
-  price    Decimal  @db.Decimal(10, 2)
+  price     Decimal @db.Decimal(12, 0)
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
 
-  orderId   String
-  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -120,13 +126,13 @@ model OrderItem {
 }
 
 model CartItem {
-  id        String   @id @default(uuid())
-  quantity  Int      @default(1)
+  id        String  @id @default(uuid())
+  quantity  Int     @default(1)
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
 
-  cartId   String
-  cart   Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId String
+  cart   Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -138,21 +144,22 @@ model CartItem {
 }
 
 model Order {
-  id        String   @id @default(uuid())
-  orderNumber String   @unique @default(cuid())
-  status    OrderStatus
-  totalAmount Decimal  @db.Decimal(10, 2)
+  id          String      @id @default(uuid())
+  orderNumber String      @unique @default(cuid())
+  status      OrderStatus
+  totalAmount Decimal     @db.Decimal(12, 0)
 
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  cartId   String?
-  cart    Cart?    @relation(fields: [cartId], references: [id], onDelete: SetNull)
+  cartId String?
+  cart   Cart?   @relation(fields: [cartId], references: [id], onDelete: SetNull)
 
   shippingAddress String?
 
   orderItems OrderItem[]
-  payment Payment?
+  payment    Payment?
+  paymentProvider PaymentProvider @default(COD)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -163,16 +170,15 @@ model Order {
   @@map("orders") // the name of the table
 }
 
-
 model Cart {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   orders     Order[]
   checkedOut Boolean @default(false)
 
-  cartItems  CartItem[]
+  cartItems CartItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -182,18 +188,20 @@ model Cart {
 }
 
 model Payment {
-  id        String   @id @default(uuid())
-  amount    Decimal  @db.Decimal(10, 2)
-  status    PaymentStatus   @default(PENDING)
-  currency  String   @default("USD")
+  id            String        @id @default(uuid())
+  amount        Decimal       @db.Decimal(12, 0)
+  status        PaymentStatus @default(PENDING)
+  currency      String        @default("VND")
   paymentMethod String?
-  transactionId String? @unique
+  provider      PaymentProvider
+  externalId    String?  // Lưu mã giao dịch của MoMo hoặc VNPAY để đối soát
+  transactionId String?       @unique
 
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  orderId  String @unique
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

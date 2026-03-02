@@ -35,10 +35,10 @@ export class CreateProductDto {
   description?: string;
 
   @ApiProperty({
-    example: 999.99,
-    description: 'The price of the product',
+    example: 150000,
+    description: 'Product price in VND',
   })
-  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsNumber()
   @IsPositive()
   @Type(() => Number)
   price: number;

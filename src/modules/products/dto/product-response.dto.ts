@@ -21,8 +21,8 @@ export class ProductResponseDto {
   description: string | null;
 
   @ApiProperty({
-    example: 999.99,
-    description: 'The price of the product',
+    example: 150000,
+    description: 'Product price in VND',
   })
   price: number;
 
