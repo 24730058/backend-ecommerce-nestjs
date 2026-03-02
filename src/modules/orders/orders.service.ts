@@ -35,20 +35,63 @@ export class OrdersService {
   constructor(private prismaService: PrismaService) {}
 
   // ─── Create order ────────────────────────────────────────────────────────────
-  // Flow:
-  //  1. Validate each product – must exist, be active and have enough stock.
-  //  2. Lock price at current product.price (immutable snapshot).
-  //  3. Calculate totalAmount = Σ (price × quantity).
-  //  4. Inside a single DB transaction:
-  //     a. Create the Order record.
-  //     b. Create all OrderItem records.
-  //     c. Decrement stock for every product atomically.
+  // Two supported flows:
+  //  A. Cart checkout (cartId provided):
+  //     1. Load cart, verify ownership and that it has items.
+  //     2. Derive items from cart items.
+  //     3. Validate + lock prices, calculate total, create order in a
+  //        single transaction, decrement stock, mark cart checkedOut.
+  //  B. Direct checkout (items provided):
+  //     1. Validate each product – must exist, be active and have enough stock.
+  //     2. Lock price at current product.price (immutable snapshot).
+  //     3. Calculate totalAmount = Σ (price × quantity).
+  //     4. Inside a single DB transaction:
+  //        a. Create the Order record.
+  //        b. Create all OrderItem records.
+  //        c. Decrement stock for every product atomically.
   //  5. Return the fully-populated order.
   async create(
     userId: string,
     createOrderDto: CreateOrderDto,
   ): Promise<OrderApiResponseDto<OrderResponseDto>> {
-    const { items, shippingAddress, cartId } = createOrderDto;
+    const { shippingAddress, cartId } = createOrderDto;
+    let { items } = createOrderDto;
+
+    // ─ Flow A: load items from cart ────────────────────────────────────────
+    if (cartId) {
+      const cart = await this.prismaService.cart.findUnique({
+        where: { id: cartId },
+        include: { cartItems: true },
+      });
+
+      if (!cart) {
+        throw new NotFoundException(`Cart with ID “${cartId}” not found`);
+      }
+      if (cart.userId !== userId) {
+        throw new ForbiddenException('You do not have access to this cart');
+      }
+      if (cart.checkedOut) {
+        throw new BadRequestException('This cart has already been checked out');
+      }
+      if (cart.cartItems.length === 0) {
+        throw new BadRequestException(
+          'Cannot create an order from an empty cart',
+        );
+      }
+
+      // Derive items from cart
+      items = cart.cartItems.map((ci) => ({
+        productId: ci.productId,
+        quantity: ci.quantity,
+      }));
+    }
+
+    // ─ Guard: must have items at this point ──────────────────────────────
+    if (!items || items.length === 0) {
+      throw new BadRequestException(
+        'Provide either “items” or a valid “cartId” to create an order',
+      );
+    }
 
     // 1 & 2 – fetch products and validate in parallel
     const productIds = [...new Set(items.map((i) => i.productId))];
@@ -125,6 +168,14 @@ export class OrdersService {
           }),
         ),
       );
+
+      // 4d – mark cart as checked out (Flow A only)
+      if (cartId) {
+        await tx.cart.update({
+          where: { id: cartId },
+          data: { checkedOut: true },
+        });
+      }
 
       return newOrder;
     });

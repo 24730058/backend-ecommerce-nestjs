@@ -35,13 +35,16 @@ export class OrderItemDto {
 export class CreateOrderDto {
   @ApiProperty({
     type: [OrderItemDto],
-    description: 'List of products and quantities',
+    description:
+      'List of products and quantities. Required when cartId is not provided.',
+    required: false,
   })
   @IsArray()
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => OrderItemDto)
-  items: OrderItemDto[];
+  @IsOptional()
+  items?: OrderItemDto[];
 
   @ApiProperty({
     example: '123 Main St, New York, NY 10001',
@@ -56,7 +59,8 @@ export class CreateOrderDto {
 
   @ApiProperty({
     example: '550e8400-e29b-41d4-a716-446655440000',
-    description: 'Optional cart ID to link the order to a cart',
+    description:
+      'Cart ID to checkout. When provided, items are loaded from the cart automatically.',
     required: false,
   })
   @IsUUID()
