@@ -1049,7 +1049,7 @@ export const UserScalarFieldEnum = {
   firstName: 'firstName',
   lastName: 'lastName',
   role: 'role',
-  refreshToken: 'refreshToken',
+  refreshTokens: 'refreshTokens',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1121,6 +1121,7 @@ export const OrderScalarFieldEnum = {
   userId: 'userId',
   cartId: 'cartId',
   shippingAddress: 'shippingAddress',
+  paymentProvider: 'paymentProvider',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1145,6 +1146,8 @@ export const PaymentScalarFieldEnum = {
   status: 'status',
   currency: 'currency',
   paymentMethod: 'paymentMethod',
+  provider: 'provider',
+  externalId: 'externalId',
   transactionId: 'transactionId',
   userId: 'userId',
   orderId: 'orderId',
@@ -1273,6 +1276,20 @@ export type EnumOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pris
  * Reference to a field of type 'OrderStatus[]'
  */
 export type ListEnumOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrderStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PaymentProvider'
+ */
+export type EnumPaymentProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentProvider'>
+    
+
+
+/**
+ * Reference to a field of type 'PaymentProvider[]'
+ */
+export type ListEnumPaymentProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentProvider[]'>
     
 
 

@@ -10,14 +10,19 @@ import { CategoryResponseDto } from './dto/category-response.dto';
 import { Category, Prisma } from '@prisma/client';
 import { QueryCategoryDto } from './dto/query-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class CategoryService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private cloudinaryService: CloudinaryService,
+  ) {}
 
   // Create a new category
   async create(
     createCategoryDto: CreateCategoryDto,
+    image?: Express.Multer.File,
   ): Promise<CategoryResponseDto> {
     const { name, slug, ...rest } = createCategoryDto;
 
@@ -38,11 +43,18 @@ export class CategoryService {
       );
     }
 
+    let imageUrl = rest.imageUrl;
+    if (image) {
+      const uploaded = await this.cloudinaryService.uploadFile(image);
+      imageUrl = uploaded.secure_url;
+    }
+
     const category = await this.prismaService.category.create({
       data: {
         name,
         slug: categorySlug,
         ...rest,
+        imageUrl,
       },
     });
 
@@ -140,6 +152,7 @@ export class CategoryService {
   async update(
     id: string,
     updateCategoryDto: UpdateCategoryDto,
+    image?: Express.Multer.File,
   ): Promise<CategoryResponseDto> {
     const existingCategory = await this.prismaService.category.findUnique({
       where: { id },
@@ -164,9 +177,18 @@ export class CategoryService {
       }
     }
 
+    const data: Prisma.CategoryUpdateInput = {
+      ...updateCategoryDto,
+    };
+
+    if (image) {
+      const uploaded = await this.cloudinaryService.uploadFile(image);
+      data.imageUrl = uploaded.secure_url;
+    }
+
     const updatedCategory = await this.prismaService.category.update({
       where: { id },
-      data: updateCategoryDto,
+      data,
       include: {
         _count: {
           select: { products: true },

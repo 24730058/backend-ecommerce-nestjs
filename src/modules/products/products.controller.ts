@@ -9,15 +9,19 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/roles.guard';
@@ -38,9 +42,36 @@ export class ProductsController {
   @Post()
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles(Role.ADMIN)
+  @UseInterceptors(FileInterceptor('image'))
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new product (Admin only)' })
-  @ApiBody({ type: CreateProductDto })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', example: 'iPhone 15 Pro' },
+        description: {
+          type: 'string',
+          example: 'Latest Apple flagship smartphone with A17 Pro chip',
+        },
+        price: { type: 'number', example: 150000 },
+        stock: { type: 'number', example: 50 },
+        sku: { type: 'string', example: 'IPHONE-15-PRO-256GB' },
+        imageUrl: {
+          type: 'string',
+          example: 'https://res.cloudinary.com/demo/image/upload/sample.jpg',
+        },
+        isActive: { type: 'boolean', example: true },
+        categoryId: {
+          type: 'string',
+          example: '550e8400-e29b-41d4-a716-446655440000',
+        },
+        image: { type: 'string', format: 'binary' },
+      },
+      required: ['name', 'price', 'sku', 'categoryId'],
+    },
+  })
   @ApiResponse({
     status: 201,
     description: 'Product created successfully.',
@@ -56,8 +87,9 @@ export class ProductsController {
   })
   async create(
     @Body() createProductDto: CreateProductDto,
+    @UploadedFile() image?: Express.Multer.File,
   ): Promise<ProductResponseDto> {
-    return await this.productsService.create(createProductDto);
+    return await this.productsService.create(createProductDto, image);
   }
 
   // Get all products
@@ -106,9 +138,35 @@ export class ProductsController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles(Role.ADMIN)
+  @UseInterceptors(FileInterceptor('image'))
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update product (Admin only)' })
-  @ApiBody({ type: UpdateProductDto })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', example: 'iPhone 15 Pro' },
+        description: {
+          type: 'string',
+          example: 'Latest Apple flagship smartphone with A17 Pro chip',
+        },
+        price: { type: 'number', example: 150000 },
+        stock: { type: 'number', example: 50 },
+        sku: { type: 'string', example: 'IPHONE-15-PRO-256GB' },
+        imageUrl: {
+          type: 'string',
+          example: 'https://res.cloudinary.com/demo/image/upload/sample.jpg',
+        },
+        isActive: { type: 'boolean', example: true },
+        categoryId: {
+          type: 'string',
+          example: '550e8400-e29b-41d4-a716-446655440000',
+        },
+        image: { type: 'string', format: 'binary' },
+      },
+    },
+  })
   @ApiResponse({
     status: 200,
     description: 'Product updated successfully',
@@ -119,8 +177,9 @@ export class ProductsController {
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
+    @UploadedFile() image?: Express.Multer.File,
   ): Promise<ProductResponseDto> {
-    return await this.productsService.update(id, updateProductDto);
+    return await this.productsService.update(id, updateProductDto, image);
   }
 
   // Update product stock (Admin only)

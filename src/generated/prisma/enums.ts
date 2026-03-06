@@ -36,3 +36,15 @@ export const PaymentStatus = {
 } as const
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const PaymentProvider = {
+  COD: 'COD',
+  BANK_TRANSFER: 'BANK_TRANSFER',
+  MOMO: 'MOMO',
+  ZALOPAY: 'ZALOPAY',
+  VNPAY: 'VNPAY',
+  STRIPE: 'STRIPE'
+} as const
+
+export type PaymentProvider = (typeof PaymentProvider)[keyof typeof PaymentProvider]

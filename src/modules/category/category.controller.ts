@@ -9,15 +9,19 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CategoryService } from './category.service';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/roles.guard';
@@ -37,17 +41,39 @@ export class CategoryController {
   @Post()
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles(Role.ADMIN)
+  @UseInterceptors(FileInterceptor('image'))
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new category' })
-  @ApiBody({ type: CreateCategoryDto })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', example: 'Electronics' },
+        description: {
+          type: 'string',
+          example: 'Devices and gadgets including phones and laptops',
+        },
+        slug: { type: 'string', example: 'electronics' },
+        imageUrl: {
+          type: 'string',
+          example: 'https://res.cloudinary.com/demo/image/upload/sample.jpg',
+        },
+        isActive: { type: 'boolean', example: true },
+        image: { type: 'string', format: 'binary' },
+      },
+      required: ['name'],
+    },
+  })
   @ApiResponse({ status: 201, description: 'Category created successfully.' })
   @ApiResponse({ status: 400, description: 'Invalid input data.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
+    @UploadedFile() image?: Express.Multer.File,
   ): Promise<CategoryResponseDto> {
-    return await this.categoryService.create(createCategoryDto);
+    return await this.categoryService.create(createCategoryDto, image);
   }
 
   // Get all categories
@@ -114,10 +140,28 @@ export class CategoryController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles(Role.ADMIN)
+  @UseInterceptors(FileInterceptor('image'))
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update category (Admin only)' })
+  @ApiConsumes('multipart/form-data')
   @ApiBody({
-    type: UpdateCategoryDto,
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', example: 'Electronics' },
+        description: {
+          type: 'string',
+          example: 'Devices and gadgets including phones and laptops',
+        },
+        slug: { type: 'string', example: 'electronics' },
+        imageUrl: {
+          type: 'string',
+          example: 'https://res.cloudinary.com/demo/image/upload/sample.jpg',
+        },
+        isActive: { type: 'boolean', example: true },
+        image: { type: 'string', format: 'binary' },
+      },
+    },
   })
   @ApiResponse({
     status: 200,
@@ -135,8 +179,9 @@ export class CategoryController {
   async update(
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
+    @UploadedFile() image?: Express.Multer.File,
   ): Promise<CategoryResponseDto> {
-    return await this.categoryService.update(id, updateCategoryDto);
+    return await this.categoryService.update(id, updateCategoryDto, image);
   }
 
   // Delete category (Admin only)

@@ -25,7 +25,7 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { OrderResponseDto } from './dto/order-response.dto';
+import { OrderApiResponseDto, OrderResponseDto } from './dto/order-response.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 
 @ApiTags('Orders')
@@ -33,7 +33,7 @@ import { QueryOrderDto } from './dto/query-order.dto';
 @UseGuards(JwtAuthGuard) // all routes require authentication
 @ApiBearerAuth('JWT-auth')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) { }
 
   // ── Create order (authenticated user) ────────────────────────────────────
   @Post()
@@ -54,7 +54,7 @@ export class OrdersController {
   async create(
     @GetUser('id') userId: string,
     @Body() createOrderDto: CreateOrderDto,
-  ): Promise<OrderResponseDto> {
+  ): Promise<OrderApiResponseDto<OrderResponseDto>> {
     return await this.ordersService.create(userId, createOrderDto);
   }
 
@@ -135,7 +135,7 @@ export class OrdersController {
     @Param('id') id: string,
     @GetUser('id') userId: string,
     @GetUser('role') role: Role,
-  ): Promise<OrderResponseDto> {
+  ): Promise<OrderApiResponseDto<OrderResponseDto>> {
     return await this.ordersService.findOne(id, userId, role);
   }
 
@@ -162,7 +162,7 @@ export class OrdersController {
     @GetUser('id') userId: string,
     @GetUser('role') role: Role,
     @Body() updateOrderDto: UpdateOrderDto,
-  ): Promise<OrderResponseDto> {
+  ): Promise<OrderApiResponseDto<OrderResponseDto>> {
     return await this.ordersService.update(id, updateOrderDto, userId, role);
   }
 
@@ -187,7 +187,7 @@ export class OrdersController {
     @Param('id') id: string,
     @GetUser('id') userId: string,
     @GetUser('role') role: Role,
-  ): Promise<OrderResponseDto> {
+  ): Promise<OrderApiResponseDto<OrderResponseDto>> {
     return await this.ordersService.cancel(id, userId, role);
   }
 }

@@ -84,7 +84,7 @@ export const UserScalarFieldEnum = {
   firstName: 'firstName',
   lastName: 'lastName',
   role: 'role',
-  refreshToken: 'refreshToken',
+  refreshTokens: 'refreshTokens',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -156,6 +156,7 @@ export const OrderScalarFieldEnum = {
   userId: 'userId',
   cartId: 'cartId',
   shippingAddress: 'shippingAddress',
+  paymentProvider: 'paymentProvider',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -180,6 +181,8 @@ export const PaymentScalarFieldEnum = {
   status: 'status',
   currency: 'currency',
   paymentMethod: 'paymentMethod',
+  provider: 'provider',
+  externalId: 'externalId',
   transactionId: 'transactionId',
   userId: 'userId',
   orderId: 'orderId',

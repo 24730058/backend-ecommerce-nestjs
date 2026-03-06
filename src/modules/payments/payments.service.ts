@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import {
   OrderStatus,
+  Payment,
   PaymentProvider,
   PaymentStatus,
   Prisma,
@@ -21,11 +22,11 @@ import {
 } from './dto/payment-response.dto';
 
 // Full payment shape returned from Prisma
-type PaymentWithRelations = Prisma.PaymentGetPayload<Record<string, never>>;
+type PaymentWithRelations = Payment;
 
 @Injectable()
 export class PaymentsService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) { }
 
   // ─── Create payment intent ────────────────────────────────────────────────
   // Flow:

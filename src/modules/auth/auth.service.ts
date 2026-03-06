@@ -98,9 +98,14 @@ export class AuthService {
     userId: string,
     refreshToken: string,
   ): Promise<void> {
+    const hashedRefreshToken = await bcrypt.hash(
+      refreshToken,
+      this.SALT_ROUNDS,
+    );
+
     await this.prisma.user.update({
       where: { id: userId },
-      data: { refreshToken },
+      data: { refreshTokens: hashedRefreshToken },
     });
   }
 
@@ -134,7 +139,7 @@ export class AuthService {
   async logout(userId: string): Promise<void> {
     await this.prisma.user.update({
       where: { id: userId },
-      data: { refreshToken: null },
+      data: { refreshTokens: null },
     });
   }
 

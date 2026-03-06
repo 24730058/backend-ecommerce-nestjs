@@ -11,6 +11,7 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { CartsModule } from './modules/carts/carts.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { CartsModule } from './modules/carts/carts.module';
     OrdersModule,
     PaymentsModule,
     CartsModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService, ThrottlerGuard],

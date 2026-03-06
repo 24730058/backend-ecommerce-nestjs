@@ -11,14 +11,19 @@ import { UpdateProductStockDto } from './dto/update-product-stock.dto';
 import { ProductResponseDto } from './dto/product-response.dto';
 import { Prisma, Product } from '@prisma/client';
 import { QueryProductDto } from './dto/query-product.dto';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private cloudinaryService: CloudinaryService,
+  ) {}
 
   // Create a new product
   async create(
     createProductDto: CreateProductDto,
+    image?: Express.Multer.File,
   ): Promise<ProductResponseDto> {
     const { sku, categoryId, ...rest } = createProductDto;
 
@@ -38,11 +43,18 @@ export class ProductsService {
       throw new NotFoundException(`Category with ID "${categoryId}" not found`);
     }
 
+    let imageUrl = rest.imageUrl;
+    if (image) {
+      const uploaded = await this.cloudinaryService.uploadFile(image);
+      imageUrl = uploaded.secure_url;
+    }
+
     const product = await this.prismaService.product.create({
       data: {
         sku,
         categoryId,
         ...rest,
+        imageUrl,
         price: new Prisma.Decimal(rest.price),
       },
       include: {
@@ -145,6 +157,7 @@ export class ProductsService {
   async update(
     id: string,
     updateProductDto: UpdateProductDto,
+    image?: Express.Multer.File,
   ): Promise<ProductResponseDto> {
     const existingProduct = await this.prismaService.product.findUnique({
       where: { id },
@@ -181,9 +194,18 @@ export class ProductsService {
       }
     }
 
+    const data: Prisma.ProductUpdateInput = {
+      ...updateProductDto,
+    };
+
+    if (image) {
+      const uploaded = await this.cloudinaryService.uploadFile(image);
+      data.imageUrl = uploaded.secure_url;
+    }
+
     const updatedProduct = await this.prismaService.product.update({
       where: { id },
-      data: updateProductDto,
+      data,
       include: {
         category: {
           select: { id: true, name: true, slug: true },
