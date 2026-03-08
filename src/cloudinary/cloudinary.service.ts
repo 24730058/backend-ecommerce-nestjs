@@ -8,7 +8,11 @@ export class CloudinaryService {
     return new Promise((resolve, reject) => {
       cloudinary.uploader
         .upload_stream({ folder: 'uploads' }, (error, result) => {
-          if (error) return reject(error);
+          if (error) {
+            return reject(
+              new Error(error.message || 'Cloudinary upload failed'),
+            );
+          }
           if (!result)
             return reject(new Error('Cloudinary did not return upload result'));
 

@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt/dist/jwt.module';
 import { ConfigService } from '@nestjs/config/dist/config.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
+import { OtpModule } from 'src/otp/otp.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
         },
       }),
     }),
+    OtpModule,
   ],
   providers: [AuthService, JwtStrategy, RefreshTokenStrategy],
   controllers: [AuthController],

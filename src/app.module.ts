@@ -12,6 +12,8 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { CartsModule } from './modules/carts/carts.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 @Module({
   imports: [
@@ -25,6 +27,23 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
         limit: 10, // max 10 requests per ttl
       },
     ]),
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.gmail.com',
+        auth: {
+          user: 'focuslearning31@gmail.com', // your email
+          pass: 'huet jngm ptvc vgsc', // your email password or app password
+        },
+      },
+      defaults: {
+        from: '"No Reply" <focuslearning31@gmail.com>', // default sender address
+      },
+      template: {
+        dir: process.cwd() + '/templates', // path to email templates
+        adapter: new HandlebarsAdapter(), // use Handlebars for templating
+        options: { strict: true },
+      },
+    }),
     PrismaModule,
     AuthModule,
     UsersModule,

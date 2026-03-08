@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <style>
+      .container {
+        font-family: sans-serif;
+        padding: 20px;
+        border: 1px solid #eee;
+        max-width: 600px;
+        margin: auto;
+      }
+      .header {
+        font-size: 20px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 20px;
+      }
+      .otp-box {
+        background-color: #f4f4f4;
+        padding: 15px;
+        text-align: center;
+        font-size: 32px;
+        font-weight: bold;
+        letter-spacing: 5px;
+        color: #007bff;
+        border-radius: 8px;
+      }
+      .footer {
+        margin-top: 20px;
+        font-size: 12px;
+        color: #777;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>{{messageTitle}}</div>
+      <p>Vui lòng sử dụng mã xác thực dưới đây để hoàn tất quy trình. Mã này có
+        hiệu lực trong 5 phút:</p>
+      <div class='otp-box'>{{otp}}</div>
+      <p>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.</p>
+      <div class='footer'>
+        Đây là email tự động, vui lòng không phản hồi.<br />
+        © 2025 My Shop - E-commerce System.
+      </div>
+    </div>
+  </body>
+</html>

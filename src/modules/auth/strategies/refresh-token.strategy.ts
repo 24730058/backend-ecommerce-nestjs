@@ -55,12 +55,18 @@ export class RefreshTokenStrategy extends PassportStrategy(
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const refreshTokenMatches = user.refreshTokens.startsWith('$2')
-      ? await bcrypt.compare(refreshToken, user.refreshTokens)
-      : refreshToken === user.refreshTokens;
+    if (!user.refreshTokens.startsWith('$2')) {
+      console.error('Stored refresh token is not a valid bcrypt hash');
+      throw new UnauthorizedException('Invalid refresh token format');
+    }
+
+    const refreshTokenMatches = await bcrypt.compare(
+      refreshToken,
+      user.refreshTokens,
+    );
 
     if (!refreshTokenMatches) {
-      throw new UnauthorizedException('Invalid refresh DOES NOT MATCH token');
+      throw new UnauthorizedException('Invalid refresh token');
     }
 
     return { id: user.id, email: user.email, role: user.role };

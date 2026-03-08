@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Length,
   Matches,
   MinLength,
 } from 'class-validator';
@@ -50,4 +51,13 @@ export class RegisterDto {
   @IsOptional()
   @IsString({ message: 'Last name must be a string' })
   lastName?: string;
+
+  @ApiProperty({
+    description: 'The OTP code for verification',
+    example: 'XJ3K9L',
+  })
+  @IsString({ message: 'OTP must be a string' })
+  @IsNotEmpty({ message: 'OTP is required' })
+  @Length(6, 6, { message: 'OTP must be exactly 6 characters long' })
+  otp: string;
 }
